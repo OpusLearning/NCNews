@@ -1,4 +1,9 @@
-const { selectArticleById, selectArticles } = require("../models/articles");
+const {
+  selectArticleById,
+  selectArticles,
+  selectCommentsById,
+  checkArticleExists,
+} = require("../models/articles");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -27,10 +32,20 @@ exports.getArticles = (req, res, next) => {
       res.status(200).send({ articles });
     })
     .catch((err) => {
-      if (err.status && err.msg) {
-        res.status(err.status).send({ msg: err.msg });
-      } else {
-        next(err);
-      }
+      next(err);
     });
+};
+exports.getCommentsById = async (req, res, next) => {
+  const { article_id } = req.params;
+  const articleIdParsed = parseInt(article_id, 10);
+  if (isNaN(articleIdParsed)) {
+    return res.status(400).send({ msg: "Bad request" });
+  }
+  try {
+    await checkArticleExists(articleIdParsed);
+    const comments = await selectCommentsById(articleIdParsed);
+    res.status(200).send({ comments });
+  } catch (err) {
+    next(err);
+  }
 };

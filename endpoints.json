@@ -38,5 +38,12 @@
       "votes": 0,
       "comment_count": 6
     }
+  },
+  "/api/articles/:article_id/comments": {
+    "body": "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+    "votes": 7,
+    "author": "grumpy19",
+    "article_id": 4,
+    "created_at": 1577890920000
   }
 }
