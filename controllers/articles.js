@@ -1,4 +1,4 @@
-const { selectArticleById } = require("../models/articles");
+const { selectArticleById, selectArticles } = require("../models/articles");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -17,5 +17,20 @@ exports.getArticleById = (req, res, next) => {
     })
     .catch((err) => {
       next(err);
+    });
+};
+
+exports.getArticles = (req, res, next) => {
+  const { sort_by } = "created_at";
+  selectArticles(sort_by)
+    .then((articles) => {
+      res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      if (err.status && err.msg) {
+        res.status(err.status).send({ msg: err.msg });
+      } else {
+        next(err);
+      }
     });
 };
