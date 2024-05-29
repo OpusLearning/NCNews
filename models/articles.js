@@ -23,7 +23,6 @@ exports.selectArticles = (sortBy = "created_at") => {
       return result.rows;
     })
     .catch((err) => {
-      console.error("Error in selectArticles:", err);
       throw err;
     });
 };
