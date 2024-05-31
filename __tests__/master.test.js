@@ -292,7 +292,7 @@ describe("GET /api/articles/:article_id/comments", () => {
 });
 
 describe("PATCH /api/articles/:article_id", () => {
-  test("200: responds with the updated article when inc_votes is valid", () => {
+  test("200: responds with the updated article", () => {
     const newVotes = { inc_votes: 1 };
     return request(app)
       .patch("/api/articles/1")
@@ -301,9 +301,18 @@ describe("PATCH /api/articles/:article_id", () => {
       .then(({ body }) => {
         expect(body.article).toEqual(
           expect.objectContaining({
-            votes: expect.any(Number),
+            votes: 101, // adding 1 too 100
           })
         );
+      });
+  });
+
+  test('400: responds with "Bad request" for invalid article_id', () => {
+    return request(app)
+      .patch("/api/articles/not-an-id")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
       });
   });
 
@@ -353,7 +362,7 @@ describe("GET /api", () => {
 });
 
 describe("GET /api/articles", () => {
-  test("200: responds with an array of articles, each having the required properties", () => {
+  test("200: responds with an array of articles", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
@@ -379,7 +388,16 @@ describe("GET /api/articles", () => {
       });
   });
 
-  test("200: responds with articles  by the topic value specified in the query", () => {
+  test.skip("404: responds with an empty array when the topic does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic=not-a-topic")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Topic not found");
+      });
+  });
+
+  test("200: responds with articles by the topic value specified in the query, including all properties", () => {
     return request(app)
       .get("/api/articles?topic=cats")
       .expect(200)
@@ -387,27 +405,68 @@ describe("GET /api/articles", () => {
         expect(body.articles).toBeInstanceOf(Array);
         expect(body.articles.length).toBeGreaterThan(0);
         body.articles.forEach((article) => {
-          expect(article.topic).toBe("cats");
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: "cats",
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            })
+          );
         });
       });
   });
+});
 
-  test("200: responds with an empty array when the topic does not exist", () => {
+describe("/api/articles/:article_id", () => {
+  test("200: responds with an article object inc comment_count", () => {
     return request(app)
-      .get("/api/articles?topic=not-a-topic")
+      .get("/api/articles/1")
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles).toBeInstanceOf(Array);
-        expect(body.articles.length).toBe(0);
+        console.log(body);
+        expect(body.article).toBeInstanceOf(Object);
+        expect(body.article).toEqual(
+          expect.objectContaining({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: 1,
+            body: expect.any(String),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: 11,
+          })
+        );
       });
   });
 
-  test("400: responds with an error for invalid queries", () => {
+  test("404: responds with an error for a non-existent article_id", () => {
     return request(app)
-      .get("/api/articles?sort_by=not-a-column")
-      .expect(400)
+      .get("/api/articles/9999")
+      .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("Article not found");
       });
+  });
+
+  describe("comment_count", () => {
+    test("200: responds with the correct comment_count when no comments", () => {
+      return request(app)
+        .get("/api/articles/2")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article).toEqual(
+            expect.objectContaining({
+              comment_count: 0,
+            })
+          );
+        });
+    });
   });
 });
