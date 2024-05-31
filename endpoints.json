@@ -45,5 +45,21 @@
     "author": "grumpy19",
     "article_id": 4,
     "created_at": 1577890920000
+  },
+  "GET /api/users": {
+    "description": "Gets all users. Responds with an array of objects, .",
+    "queries": [],
+    "exampleResponse": {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "username": "MrT",
+            "name": "Mr T",
+            "avatar_url": "https://www.example.com/avatar.jpg"
+          }
+        ]
+      }
+    }
   }
 }
