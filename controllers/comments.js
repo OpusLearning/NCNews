@@ -2,49 +2,46 @@ const {
   selectCommentsById,
   insertComment,
   checkArticleExists,
+  checkUserExists,
+  removeCommentById,
 } = require("../models/comments");
 
 exports.getCommentsById = (req, res, next) => {
   const { article_id } = req.params;
-  const articleIdParsed = parseInt(article_id, 10);
 
-  if (isNaN(articleIdParsed)) {
-    return res.status(400).send({ msg: "Bad request" });
-  }
-
-  checkArticleExists(articleIdParsed)
+  checkArticleExists(article_id)
     .then(() => {
-      return selectCommentsById(articleIdParsed);
+      return selectCommentsById(article_id);
     })
     .then((comments) => {
       res.status(200).send({ comments });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 exports.addComment = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
-  const articleIdParsed = parseInt(article_id, 10);
-
-  if (isNaN(articleIdParsed)) {
-    return res.status(400).send({ msg: "Bad request" });
-  }
 
   if (!username || !body) {
-    return res.status(400).send({ msg: "Missing required fields" });
+    return next({ status: 400, msg: "Missing required fields" });
   }
 
-  checkArticleExists(articleIdParsed)
+  Promise.all([checkArticleExists(article_id), checkUserExists(username)])
     .then(() => {
-      return insertComment(articleIdParsed, username, body);
+      return insertComment(article_id, username, body);
     })
     .then((comment) => {
       res.status(201).send({ comment });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
+};
+
+exports.deleteByCommentId = (req, res, next) => {
+  const { comment_id } = req.params;
+  removeCommentById(comment_id)
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch(next);
 };
