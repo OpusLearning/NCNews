@@ -565,3 +565,27 @@ describe("GET /api/articles", () => {
       });
   });
 });
+
+describe("GET /api/articles", () => {
+  test("200: responds with an array of articles sorted by comment_count in descending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=comment_count&order=desc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("comment_count", {
+          descending: true,
+        });
+      });
+  });
+
+  test("200: responds with an array of articles sorted by comment_count in ascending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=comment_count&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("comment_count", {
+          descending: false,
+        });
+      });
+  });
+});
