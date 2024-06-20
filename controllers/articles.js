@@ -16,14 +16,15 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by = "created_at", topic } = req.query;
-  const validSortBys = ["created_at", "title", "topic", "author", "votes"];
+  const { sort_by = "created_at", order = "desc", topic } = req.query;
+  const validSortBys = ["created_at", "votes", "comment_count"];
+  const validOrders = ["asc", "desc"];
 
-  if (!validSortBys.includes(sort_by)) {
+  if (!validSortBys.includes(sort_by) || !validOrders.includes(order)) {
     return next({ status: 400, msg: "Bad request" });
   }
 
-  selectArticles(sort_by, topic)
+  selectArticles(sort_by, order, topic)
     .then((articles) => {
       res.status(200).send({ articles });
     })

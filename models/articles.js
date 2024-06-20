@@ -18,7 +18,14 @@ exports.selectArticleById = (article_id) => {
     });
 };
 
-exports.selectArticles = (sort_by = "created_at", topic) => {
+exports.selectArticles = (sort_by = "created_at", order = "desc", topic) => {
+  const validSortBys = ["created_at", "votes", "comment_count"];
+  const validOrders = ["asc", "desc"];
+
+  if (!validSortBys.includes(sort_by) || !validOrders.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Bad request" });
+  }
+
   let queryStr = `
         SELECT 
           author, 
@@ -37,7 +44,7 @@ exports.selectArticles = (sort_by = "created_at", topic) => {
     queryParams.push(topic);
   }
 
-  queryStr += ` ORDER BY ${sort_by} DESC;`;
+  queryStr += ` ORDER BY ${sort_by} ${order};`;
 
   return db.query(queryStr, queryParams).then(({ rows }) => {
     return rows;
