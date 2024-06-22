@@ -1,11 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-
-const { getTopics } = require("./controllers/topics.js");
+const { getTopics, postTopic } = require("./controllers/topics.js");
 const {
   getArticleById,
   getArticles,
   updateArticleById,
+  postArticle, // Import the postArticle controller
 } = require("./controllers/articles.js");
 const {
   getCommentsById,
@@ -15,15 +15,20 @@ const {
 const { getUsers } = require("./controllers/users.js");
 const { endpointsJson } = require("./controllers/allendpoints.js");
 const endpoints = require("./endpoints.json");
+
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+
 app.get("/api", endpointsJson);
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles/:article_id/comments", getCommentsById);
 app.post("/api/articles/:article_id/comments", addComment);
 app.get("/api/articles", getArticles);
+app.post("/api/articles", postArticle);
+app.post("/api/topics", postTopic);
 app.patch("/api/articles/:article_id", updateArticleById);
 app.delete("/api/comments/:comment_id", deleteByCommentId);
 app.get("/api/users", getUsers);

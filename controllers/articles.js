@@ -3,6 +3,7 @@ const {
   selectArticles,
   selectCommentsById,
   updateArticle,
+  insertArticle,
 } = require("../models/articles");
 
 exports.getArticleById = (req, res, next) => {
@@ -56,4 +57,13 @@ exports.updateArticleById = async (req, res, next) => {
   } catch (err) {
     next(err.status ? err : { status: 500, msg: "Internal Server Error" });
   }
+};
+exports.postArticle = (req, res, next) => {
+  const { title, topic, author, body, article_img_url } = req.body;
+
+  insertArticle({ title, topic, author, body, article_img_url })
+    .then((article) => {
+      res.status(201).send({ article });
+    })
+    .catch(next);
 };

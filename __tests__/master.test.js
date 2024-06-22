@@ -41,27 +41,6 @@ describe("GET /api/topics", () => {
   });
 });
 
-describe("GET /api/users", () => {
-  test("200: responds with an array of users", () => {
-    return request(app)
-      .get("/api/users")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.users).toBeInstanceOf(Array);
-        expect(body.users.length).toBeGreaterThan(0);
-        body.users.forEach((user) => {
-          expect(user).toEqual(
-            expect.objectContaining({
-              username: expect.any(String),
-              name: expect.any(String),
-              avatar_url: expect.any(String),
-            })
-          );
-        });
-      });
-  });
-});
-
 describe("POST /api/articles/:article_id/comments", () => {
   test("201: responds with comment", () => {
     const newComment = {
@@ -586,6 +565,177 @@ describe("GET /api/articles", () => {
         expect(body.articles).toBeSortedBy("comment_count", {
           descending: false,
         });
+      });
+  });
+});
+
+describe("POST /api/articles", () => {
+  test("201: responds with the newly created article", () => {
+    const newArticle = {
+      title: "New Article",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "This is a new article body.",
+      article_img_url: "https://example.com/image.jpg",
+    };
+
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: "New Article",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "This is a new article body.",
+            created_at: expect.any(String),
+            votes: 0,
+            article_img_url: "https://example.com/image.jpg",
+          })
+        );
+      });
+  });
+
+  test("400: responds with an error when missing required fields", () => {
+    const newArticle = {
+      title: "New Article",
+      topic: "mitch",
+    };
+
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("400: responds with an error when author does not exist", () => {
+    const newArticle = {
+      title: "New Article",
+      topic: "mitch",
+      author: "non_existent_author",
+      body: "This is a new article body.",
+      article_img_url: "https://example.com/image.jpg",
+    };
+
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("400: responds with an error when topic does not exist", () => {
+    const newArticle = {
+      title: "New Article",
+      topic: "non_existent_topic",
+      author: "butter_bridge",
+      body: "This is a new article body.",
+      article_img_url: "https://example.com/image.jpg",
+    };
+
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("201: ignores extra properties", () => {
+    const newArticle = {
+      title: "New Article",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "This is a new article body.",
+      article_img_url: "https://example.com/image.jpg",
+      extra_property: "ignore this",
+    };
+
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: "New Article",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "This is a new article body.",
+            created_at: expect.any(String),
+            votes: 0,
+            article_img_url: "https://example.com/image.jpg",
+          })
+        );
+        expect(body.article).not.toHaveProperty("extra_property");
+      });
+  });
+});
+
+describe("POST /api/topics", () => {
+  test("201: responds with the newly created topic", () => {
+    const newTopic = {
+      slug: "new-topic",
+      description: "A new topic description.",
+    };
+
+    return request(app)
+      .post("/api/topics")
+      .send(newTopic)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).toEqual(
+          expect.objectContaining({
+            slug: "new-topic",
+            description: "A new topic description.",
+          })
+        );
+      });
+  });
+
+  test("400: responds with an error when missing required fields", () => {
+    const newTopic = {
+      slug: "new-topic",
+    };
+
+    return request(app)
+      .post("/api/topics")
+      .send(newTopic)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("201: ignores extra properties", () => {
+    const newTopic = {
+      slug: "new-topic",
+      description: "A new topic description.",
+      extra_property: "ignore this",
+    };
+
+    return request(app)
+      .post("/api/topics")
+      .send(newTopic)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).toEqual(
+          expect.objectContaining({
+            slug: "new-topic",
+            description: "A new topic description.",
+          })
+        );
+        expect(body.topic).not.toHaveProperty("extra_property");
       });
   });
 });

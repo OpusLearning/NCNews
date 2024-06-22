@@ -82,3 +82,29 @@ exports.updateArticle = (article_id, inc_votes) => {
       return Promise.reject({ status: 500, msg: "Internal Server Error" });
     });
 };
+
+exports.insertArticle = ({ title, topic, author, body, article_img_url }) => {
+  if (!title || !topic || !author || !body) {
+    return Promise.reject({ status: 400, msg: "Bad request" });
+  }
+
+  const queryStr = `
+    INSERT INTO articles (title, topic, author, body, article_img_url, created_at, votes)
+    VALUES ($1, $2, $3, $4, $5, NOW(), 0)
+    RETURNING *;
+  `;
+  const queryParams = [title, topic, author, body, article_img_url];
+
+  return db
+    .query(queryStr, queryParams)
+    .then(({ rows }) => {
+      return rows[0];
+    })
+    .catch((err) => {
+      if (err.code === "23503") {
+        // Foreign key violation
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      }
+      return Promise.reject({ status: 500, msg: "Internal Server Error" });
+    });
+};
