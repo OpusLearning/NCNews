@@ -5,7 +5,7 @@ const {
   getArticleById,
   getArticles,
   updateArticleById,
-  postArticle, // Import the postArticle controller
+  postArticle,
 } = require("./controllers/articles.js");
 const {
   getCommentsById,
@@ -20,6 +20,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+//  ping endpoint here
+app.get("/api/ping", (req, res) => {
+  console.log('Ping received at', new Date().toISOString());
+  res.status(200).json({ message: 'OK', timestamp: new Date().toISOString() });
+});
 
 app.get("/api", endpointsJson);
 app.get("/api/topics", getTopics);
