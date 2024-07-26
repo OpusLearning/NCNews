@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { getTopics, postTopic } = require("./controllers/topics.js");
+const { selectTopics } = require("./models/topics");
 const {
   getArticleById,
   getArticles,
@@ -22,9 +23,24 @@ app.use(cors());
 app.use(express.json());
 
 //  ping endpoint here
-app.get("/api/ping", (req, res) => {
-  console.log('Ping received at', new Date().toISOString());
-  res.status(200).json({ message: 'OK', timestamp: new Date().toISOString() });
+app.get("/api/ping", async (req, res) => {
+  try {
+    const topics = await selectTopics();
+    console.log('Ping received at', new Date().toISOString());
+    res.status(200).json({ 
+      message: 'OK', 
+      timestamp: new Date().toISOString(),
+      dbStatus: 'Connected',
+      topicsCount: topics.length
+    });
+  } catch (error) {
+    console.error('Database ping failed:', error);
+    res.status(500).json({ 
+      message: 'Error', 
+      timestamp: new Date().toISOString(),
+      dbStatus: 'Disconnected'
+    });
+  }
 });
 
 app.get("/api", endpointsJson);
