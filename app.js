@@ -22,11 +22,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//  ping endpoint here
-app.get("/api/ping", async (req, res) => {
+// Lightweight ping endpoint
+app.get("/api/ping", (req, res) => {
+  console.log('Ping received at', new Date().toISOString());
+  res.status(200).json({ 
+    message: 'pong', 
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Database ping endpoint
+app.get("/api/dbping", async (req, res) => {
   try {
     const topics = await selectTopics();
-    console.log('Ping received at', new Date().toISOString());
+    console.log('DB Ping received at', new Date().toISOString());
     res.status(200).json({ 
       message: 'OK', 
       timestamp: new Date().toISOString(),
